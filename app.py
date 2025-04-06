@@ -19,15 +19,15 @@ class SpecialIDGenerator:
         chars = string.ascii_uppercase + string.digits
         return ''.join(random.choices(chars, k=self.id_length))
 
-    def generate_id(self, name):
+    def generate_id(self, name, aadhar_number):
         initials = self._get_initials(name)
         date_str = datetime.now().strftime("%Y%m%d") if self.use_date else ""
         unique_part = self._generate_random_part()
-        special_id = f"{initials}-{date_str}-{unique_part}"
+        special_id = f"{initials}-{date_str}-{aadhar_number}-{unique_part}"
 
         while special_id in self.generated_ids:
             unique_part = self._generate_random_part()
-            special_id = f"{initials}-{date_str}-{unique_part}"
+            special_id = f"{initials}-{date_str}-{aadhar_number}-{unique_part}"
 
         self.generated_ids.add(special_id)
         return special_id
@@ -37,7 +37,7 @@ class SpecialIDApp:
         self.generator = SpecialIDGenerator()
         self.root = root
         self.root.title("Special ID Generator with QR Code")
-        self.root.geometry("400x500")
+        self.root.geometry("400x600")  # Increased size to accommodate the new field
         self.root.resizable(False, False)
 
         # Styling
@@ -52,6 +52,12 @@ class SpecialIDApp:
         self.name_entry = tk.Entry(root, width=30, font=font_small)
         self.name_entry.pack(pady=5)
 
+        self.aadhar_label = tk.Label(root, text="Enter your Aadhar number (12 digits):", bg="#f2f2f2", font=font_large)
+        self.aadhar_label.pack(pady=10)
+
+        self.aadhar_entry = tk.Entry(root, width=30, font=font_small)
+        self.aadhar_entry.pack(pady=5)
+
         self.generate_button = tk.Button(root, text="Generate ID", command=self.generate_id, font=font_small, bg="#4CAF50", fg="white", width=20)
         self.generate_button.pack(pady=10)
 
@@ -63,11 +69,17 @@ class SpecialIDApp:
 
     def generate_id(self):
         name = self.name_entry.get().strip()
+        aadhar_number = self.aadhar_entry.get().strip()
+
+        # Validate input
         if not name:
             messagebox.showwarning("Input Error", "Please enter your name.")
             return
+        if not aadhar_number or len(aadhar_number) != 12 or not aadhar_number.isdigit():
+            messagebox.showwarning("Input Error", "Please enter a valid 12-digit Aadhar number.")
+            return
 
-        special_id = self.generator.generate_id(name)
+        special_id = self.generator.generate_id(name, aadhar_number)
         self.result_label.config(text=f"Your Special ID: {special_id}")
 
         self.generate_qr_code(special_id)
